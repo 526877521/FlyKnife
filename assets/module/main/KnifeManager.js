@@ -22,14 +22,14 @@ cc.Class({
             this.knifeNodePool.put(knife); // 通过 put 接口放入对象池
         }
 
-        this.schedule(this.randomGenetateKnife, 5);
+        this.schedule(this.randomGenetateKnife, 3);
 
     },
 
     //随机生成刀 父节点为大图
     randomGenetateKnife() {
-        let maxWidth = parseInt(this.node.width * 0.8);
-        let maxHeight = parseInt(this.node.height * 0.8);
+        let maxWidth = this.node.width * 0.7;
+        let maxHeight = this.node.height * 0.7;
         let randomX = Util.randomByMaxValue(maxWidth);
         let randomY = Util.randomByMaxValue(maxHeight);
 

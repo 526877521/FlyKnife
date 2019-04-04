@@ -1,4 +1,4 @@
-let Observer = require("Observer");
+let Util = require("Util");
 window.Game = window.Game || {};
 cc.Class({
     extends: cc.Component,
@@ -13,6 +13,8 @@ cc.Class({
         //开启碰撞检测
         cc.director.getCollisionManager().enabled = true;
         this.addListener();
+        //刀开始旋转
+        this._circle();
     },
     //初始化触摸事件
     addListener() {
@@ -23,9 +25,29 @@ cc.Class({
     },
     //鼠标点击
     _touchStart() {
-        this.hero.setScale(0.5);
-        //刀开始旋转
-        this._circle();
+        this.hero.setScale(0.8);
+        //this._transformAttack();
+
+    },
+
+    //开始变形成攻击形态 刀相对于父节点的角度发生改变
+    _transformAttack() {
+        let count = this.circlePanel.childrenCount;
+        for (let k = 0; k < count; k++) {
+            let childNode = this.circlePanel.children[k];
+            childNode.setRotation(childNode.rotation + 90);
+
+        }
+
+    },
+    //变成普通形态
+    _tranformCommon() {
+        let count = this.circlePanel.childrenCount;
+        for (let k = 0; k < count; k++) {
+            let childNode = this.circlePanel.children[k];
+            childNode.setRotation(childNode.rotation - 90);
+
+        }
     },
     _touchMove(event) {
         //let timgNode = this.node.getChildByName("timg")
@@ -34,13 +56,15 @@ cc.Class({
     },
 
     _touchEnd() {
-        this.circlePanel.setScale(1);
-        this.circlePanel.pauseAllActions();
+        this.hero.setScale(1);
+        //this._tranformCommon();
+        //this.circlePanel.pauseAllActions();
     },
     //向转盘上添加刀
     addKnifePrefab() {
         let knife = Game.KnifeManager.createKnife();
         knife.setScale(0.05);
+        knife.getComponent(cc.PolygonCollider).tag = 1;
 
         let count = this.circlePanel.childrenCount;
         console.log(" 向转盘上添加刀  此时子节点数量为", count);
@@ -48,18 +72,19 @@ cc.Class({
         for (let k = 0; k < count; k++) {
             let childNode = this.circlePanel.children[k];
             let posAngle = perAngle * k;
-            let radian = parseFloat((angle1 * Math.PI / 180).toFixed(2));
-            childNode.setRotation(angle1 - 120);
-            let vecX = parseFloa(150 * Math.cos(radian).toFixed(2));
-            childNode.setPosition(150 * Math.cos(radian), 150 * Math.sin(radian));
+            let radian = parseFloat((posAngle * Math.PI / 180).toFixed(2));
+            childNode.setRotation(240 - posAngle);
+            let vecX = parseInt((150 * Math.cos(radian)).toFixed());
+            let vecY = parseInt((150 * Math.sin(radian)).toFixed());
+            childNode.setPosition(vecX, vecY);
         }
 
-        let angle1 = angle * count;
-        let radian = angle1 * Math.PI / 180;
-
-        knife.setPosition(150 * Math.cos(radian), 150 * Math.sin(radian));
-        knife.setRotation(angle1 - 120);
-        knife.getComponent(cc.PolygonCollider).tag = 1;
+        let newAngle = perAngle * count;
+        let newRadian = parseFloat((newAngle * Math.PI / 180).toFixed(2));
+        let vecX = parseInt((150 * Math.cos(newRadian)).toFixed());
+        let vecY = parseInt((150 * Math.sin(newRadian)).toFixed());
+        knife.setPosition(vecX, vecY);
+        knife.setRotation(240 - newAngle);
         this.circlePanel.addChild(knife);
     },
     /**
@@ -68,20 +93,29 @@ cc.Class({
      *  1.修改位置  2.设置角度
      */
 
-    subKnifePrefab(node) {
-        node.getComponent(cc.PolygonCollider).tag = 11;
-        node.removeFromParent(false);
+    subKnifePrefab(subNode) {
+        subNode.getComponent(cc.PolygonCollider).tag = 11;
+        subNode.removeFromParent(false);
         let count = this.circlePanel.childrenCount;
-        let angle = (360 / count).toFixed(2);
+        let perAngle = (360 / count).toFixed(2);
         for (let k = 0; k < count; k++) {
             let childNode = this.circlePanel.children[k];
-            let angle1 = angle * k;
-            let radian = (angle1 * Math.PI / 180).toFixed(2);
-            childNode.setRotation(angle1 - 120);
-            childNode.setPosition(150 * Math.cos(radian), 150 * Math.sin(radian));
+            let posAngle = perAngle * k;
+            let radian = parseFloat((posAngle * Math.PI / 180).toFixed(2));
+            childNode.setRotation(240 - posAngle);
+            let vecX = parseInt((150 * Math.cos(radian)).toFixed());
+            let vecY = parseInt((150 * Math.sin(radian)).toFixed());
+            childNode.setPosition(vecX, vecY);
         }
 
-        Game.KnifeManager.destoryKnife(node);
+
+        subNode.setScale(0.08);
+        let randomNumber = Util.randomByMaxValue(30);
+        subNode.setPosition(subNode.x + 1.3 * randomNumber, subNode.y + 1.5 * randomNumber);
+        subNode.parent = this.node;
+
+
+        //Game.KnifeManager.destoryKnife(node);
     },
 
 
